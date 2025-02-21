@@ -6,7 +6,15 @@ import validationErrorParser from "src/util/validationErrorParser";
 
 export const listVotes: RequestHandler = async (req, res, next) => {
   try {
-    const votes = VoteModel.find();
+    /*
+    Fix #3: The call to VoteModel.find() was not awaited, so the "votes" returned as JSON
+    was a promise instead of a list of Vote models. This leads to a weird error message about
+    how a circular structure (in this case, the query promise) cannot be converted to JSON.
+    This can be found by looking at the code and comparing it to other projects or just knowing that 
+    Mongoose queries must be awaited, or by console.log(votes) and noticing it's a promise instead
+    of a list of votes (all the candidates used the first strategy).
+    */
+    const votes = await VoteModel.find();
     res.status(200).json(votes);
   } catch (error) {
     next(error);
